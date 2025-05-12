@@ -1,0 +1,46 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chakal.Core", "Chakal.Core\Chakal.Core.csproj", "{5334FC16-C079-4B11-A997-9F315CB97C94}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chakal.Application", "Chakal.Application\Chakal.Application.csproj", "{F03BAAA9-5CDD-498E-89CB-6502E22F0458}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chakal.Infrastructure", "Chakal.Infrastructure\Chakal.Infrastructure.csproj", "{FD9F00A9-E6D8-49DD-9C12-254A03E00508}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chakal.Infrastructure.Models", "Chakal.Infrastructure.Models\Chakal.Infrastructure.Models.csproj", "{E4DD47EA-E6A1-40DA-8DD7-A21132E208D4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chakal.IngestSystem", "Chakal.IngestSystem\Chakal.IngestSystem.csproj", "{7643D841-A4C0-4310-B50E-B04159E53B21}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5334FC16-C079-4B11-A997-9F315CB97C94}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5334FC16-C079-4B11-A997-9F315CB97C94}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5334FC16-C079-4B11-A997-9F315CB97C94}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5334FC16-C079-4B11-A997-9F315CB97C94}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F03BAAA9-5CDD-498E-89CB-6502E22F0458}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F03BAAA9-5CDD-498E-89CB-6502E22F0458}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F03BAAA9-5CDD-498E-89CB-6502E22F0458}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F03BAAA9-5CDD-498E-89CB-6502E22F0458}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FD9F00A9-E6D8-49DD-9C12-254A03E00508}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FD9F00A9-E6D8-49DD-9C12-254A03E00508}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FD9F00A9-E6D8-49DD-9C12-254A03E00508}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FD9F00A9-E6D8-49DD-9C12-254A03E00508}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E4DD47EA-E6A1-40DA-8DD7-A21132E208D4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E4DD47EA-E6A1-40DA-8DD7-A21132E208D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E4DD47EA-E6A1-40DA-8DD7-A21132E208D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E4DD47EA-E6A1-40DA-8DD7-A21132E208D4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7643D841-A4C0-4310-B50E-B04159E53B21}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7643D841-A4C0-4310-B50E-B04159E53B21}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7643D841-A4C0-4310-B50E-B04159E53B21}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7643D841-A4C0-4310-B50E-B04159E53B21}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

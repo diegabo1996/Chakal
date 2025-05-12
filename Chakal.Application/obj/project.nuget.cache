@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "dgSpecHash": "5hArMLBMphU=",
+  "success": true,
+  "projectFilePath": "C:\\Solutions\\Chakal\\Chakal.Application\\Chakal.Application.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\diega\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\9.0.4\\microsoft.extensions.dependencyinjection.abstractions.9.0.4.nupkg.sha512",
+    "C:\\Users\\diega\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\9.0.4\\microsoft.extensions.logging.abstractions.9.0.4.nupkg.sha512",
+    "C:\\Users\\diega\\.nuget\\packages\\system.diagnostics.diagnosticsource\\9.0.4\\system.diagnostics.diagnosticsource.9.0.4.nupkg.sha512"
+  ],
+  "logs": []
+}

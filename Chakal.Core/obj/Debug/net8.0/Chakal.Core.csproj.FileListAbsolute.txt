@@ -1,0 +1,12 @@
+C:\Solutions\Chakal\Chakal.Core\bin\Debug\net8.0\Chakal.Core.deps.json
+C:\Solutions\Chakal\Chakal.Core\bin\Debug\net8.0\Chakal.Core.dll
+C:\Solutions\Chakal\Chakal.Core\bin\Debug\net8.0\Chakal.Core.pdb
+C:\Solutions\Chakal\Chakal.Core\obj\Debug\net8.0\Chakal.Core.csproj.AssemblyReference.cache
+C:\Solutions\Chakal\Chakal.Core\obj\Debug\net8.0\Chakal.Core.GeneratedMSBuildEditorConfig.editorconfig
+C:\Solutions\Chakal\Chakal.Core\obj\Debug\net8.0\Chakal.Core.AssemblyInfoInputs.cache
+C:\Solutions\Chakal\Chakal.Core\obj\Debug\net8.0\Chakal.Core.AssemblyInfo.cs
+C:\Solutions\Chakal\Chakal.Core\obj\Debug\net8.0\Chakal.Core.csproj.CoreCompileInputs.cache
+C:\Solutions\Chakal\Chakal.Core\obj\Debug\net8.0\Chakal.Core.dll
+C:\Solutions\Chakal\Chakal.Core\obj\Debug\net8.0\refint\Chakal.Core.dll
+C:\Solutions\Chakal\Chakal.Core\obj\Debug\net8.0\Chakal.Core.pdb
+C:\Solutions\Chakal\Chakal.Core\obj\Debug\net8.0\ref\Chakal.Core.dll

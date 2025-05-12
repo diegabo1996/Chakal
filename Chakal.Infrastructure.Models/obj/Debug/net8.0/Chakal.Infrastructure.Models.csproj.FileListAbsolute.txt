@@ -1,0 +1,11 @@
+C:\Solutions\Chakal\Chakal.Infrastructure.Models\bin\Debug\net8.0\Chakal.Infrastructure.Models.deps.json
+C:\Solutions\Chakal\Chakal.Infrastructure.Models\bin\Debug\net8.0\Chakal.Infrastructure.Models.dll
+C:\Solutions\Chakal\Chakal.Infrastructure.Models\bin\Debug\net8.0\Chakal.Infrastructure.Models.pdb
+C:\Solutions\Chakal\Chakal.Infrastructure.Models\obj\Debug\net8.0\Chakal.Infrastructure.Models.GeneratedMSBuildEditorConfig.editorconfig
+C:\Solutions\Chakal\Chakal.Infrastructure.Models\obj\Debug\net8.0\Chakal.Infrastructure.Models.AssemblyInfoInputs.cache
+C:\Solutions\Chakal\Chakal.Infrastructure.Models\obj\Debug\net8.0\Chakal.Infrastructure.Models.AssemblyInfo.cs
+C:\Solutions\Chakal\Chakal.Infrastructure.Models\obj\Debug\net8.0\Chakal.Infrastructure.Models.csproj.CoreCompileInputs.cache
+C:\Solutions\Chakal\Chakal.Infrastructure.Models\obj\Debug\net8.0\Chakal.Infrastructure.Models.dll
+C:\Solutions\Chakal\Chakal.Infrastructure.Models\obj\Debug\net8.0\refint\Chakal.Infrastructure.Models.dll
+C:\Solutions\Chakal\Chakal.Infrastructure.Models\obj\Debug\net8.0\Chakal.Infrastructure.Models.pdb
+C:\Solutions\Chakal\Chakal.Infrastructure.Models\obj\Debug\net8.0\ref\Chakal.Infrastructure.Models.dll

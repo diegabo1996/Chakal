@@ -1,0 +1,15 @@
+C:\Solutions\Chakal\Chakal.Application\bin\Debug\net8.0\Chakal.Application.deps.json
+C:\Solutions\Chakal\Chakal.Application\bin\Debug\net8.0\Chakal.Application.dll
+C:\Solutions\Chakal\Chakal.Application\bin\Debug\net8.0\Chakal.Application.pdb
+C:\Solutions\Chakal\Chakal.Application\bin\Debug\net8.0\Chakal.Core.dll
+C:\Solutions\Chakal\Chakal.Application\bin\Debug\net8.0\Chakal.Core.pdb
+C:\Solutions\Chakal\Chakal.Application\obj\Debug\net8.0\Chakal.Application.csproj.AssemblyReference.cache
+C:\Solutions\Chakal\Chakal.Application\obj\Debug\net8.0\Chakal.Application.GeneratedMSBuildEditorConfig.editorconfig
+C:\Solutions\Chakal\Chakal.Application\obj\Debug\net8.0\Chakal.Application.AssemblyInfoInputs.cache
+C:\Solutions\Chakal\Chakal.Application\obj\Debug\net8.0\Chakal.Application.AssemblyInfo.cs
+C:\Solutions\Chakal\Chakal.Application\obj\Debug\net8.0\Chakal.Application.csproj.CoreCompileInputs.cache
+C:\Solutions\Chakal\Chakal.Application\obj\Debug\net8.0\Chakal.A.9B2E1C84.Up2Date
+C:\Solutions\Chakal\Chakal.Application\obj\Debug\net8.0\Chakal.Application.dll
+C:\Solutions\Chakal\Chakal.Application\obj\Debug\net8.0\refint\Chakal.Application.dll
+C:\Solutions\Chakal\Chakal.Application\obj\Debug\net8.0\Chakal.Application.pdb
+C:\Solutions\Chakal\Chakal.Application\obj\Debug\net8.0\ref\Chakal.Application.dll
