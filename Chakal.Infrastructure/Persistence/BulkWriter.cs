@@ -29,6 +29,10 @@ namespace Chakal.Infrastructure.Persistence
     /// <summary>
     /// Bulk writer for batching events to be persisted
     /// </summary>
+    /// <remarks>
+    /// This class is obsolete. Use <see cref="Chakal.IngestSystem.BulkWriterWorker"/> instead.
+    /// </remarks>
+    [Obsolete("This class is obsolete. Use BulkWriterWorker instead.")]
     public class BulkWriter : IDisposable, IAsyncDisposable
     {
         private readonly ILogger<BulkWriter> _logger;
@@ -54,11 +58,12 @@ namespace Chakal.Infrastructure.Persistence
         /// <param name="persistence">Event persistence service</param>
         /// <param name="channelReader">Channel reader for events</param>
         /// <param name="options">Configuration options</param>
+        [Obsolete("This class is obsolete. Use BulkWriterWorker instead.")]
         public BulkWriter(
             ILogger<BulkWriter> logger,
             IEventPersistence persistence,
             ChannelReader<object> channelReader,
-            BulkWriterOptions options = null)
+            BulkWriterOptions? options = null)
         {
             _logger = logger;
             _persistence = persistence;
@@ -124,17 +129,15 @@ namespace Chakal.Infrastructure.Persistence
             }
             finally
             {
-                // Flush any remaining events before exiting
-                try
+                // Make sure we flush any remaining events
+                try 
                 {
                     await FlushEventsAsync();
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error flushing events on shutdown");
+                    _logger.LogError(ex, "Error flushing events during shutdown");
                 }
-                
-                _logger.LogInformation("Bulk writer processing task stopped");
             }
         }
         
@@ -144,53 +147,62 @@ namespace Chakal.Infrastructure.Persistence
             {
                 case ChatEvent chatEvent:
                     _chatEvents.Add(chatEvent);
+                    
+                    // Persist user info with each chat event
+                    await _persistence.PersistUserInfoAsync(
+                        chatEvent.UserId,
+                        $"user_{chatEvent.UserId}", // Placeholder for unique ID
+                        chatEvent.Username,
+                        "unknown", // Placeholder for region
+                        0, // Placeholder for follower count 
+                        _cts.Token);
                     break;
                     
                 case GiftEvent giftEvent:
                     _giftEvents.Add(giftEvent);
                     
-                    // Also persist gift and user info immediately
-                    await _persistence.PersistGiftInfoAsync(
-                        giftEvent.GiftId,
-                        giftEvent.GiftName,
-                        0, // We don't have coin cost in the event
-                        giftEvent.DiamondCount,
-                        false, // We don't have exclusivity info in the event
-                        false, // We don't have panel info in the event
-                        _cts.Token);
-                    
+                    // Persist user and gift info with each gift event
                     await _persistence.PersistUserInfoAsync(
                         giftEvent.UserId,
-                        "", // We don't have uniqueId in the event
+                        $"user_{giftEvent.UserId}", // Placeholder for unique ID
                         giftEvent.Username,
-                        "", // We don't have region in the event
-                        0, // We don't have follower count in the event
+                        "unknown", // Placeholder for region
+                        0, // Placeholder for follower count
+                        _cts.Token);
+                        
+                    await _persistence.PersistGiftInfoAsync(
+                        giftEvent.GiftId,
+                        giftEvent.GiftName ?? "Unknown",
+                        0, // Placeholder for coin cost
+                        giftEvent.DiamondCount,
+                        false, // Placeholder for is exclusive
+                        false, // Placeholder for is on panel
                         _cts.Token);
                     break;
                     
                 case SocialEvent socialEvent:
                     _socialEvents.Add(socialEvent);
                     
-                    // Also persist user info immediately
+                    // Persist user info with each social event
                     await _persistence.PersistUserInfoAsync(
                         socialEvent.UserId,
-                        "", // We don't have uniqueId in the event
+                        $"user_{socialEvent.UserId}", // Placeholder for unique ID
                         socialEvent.Username,
-                        "", // We don't have region in the event
-                        0, // We don't have follower count in the event
+                        "unknown", // Placeholder for region
+                        0, // Placeholder for follower count
                         _cts.Token);
                     break;
                     
                 case SubscriptionEvent subscriptionEvent:
                     _subscriptionEvents.Add(subscriptionEvent);
                     
-                    // Also persist user info immediately
+                    // Persist user info with each subscription event
                     await _persistence.PersistUserInfoAsync(
                         subscriptionEvent.UserId,
-                        "", // We don't have uniqueId in the event
+                        $"user_{subscriptionEvent.UserId}", // Placeholder for unique ID
                         subscriptionEvent.Username,
-                        "", // We don't have region in the event
-                        0, // We don't have follower count in the event
+                        "unknown", // Placeholder for region
+                        0, // Placeholder for follower count
                         _cts.Token);
                     break;
                     
@@ -242,59 +254,73 @@ namespace Chakal.Infrastructure.Persistence
         {
             var tasks = new List<Task>();
             
-            if (_chatEvents.Count > 0)
+            try
             {
-                tasks.Add(_persistence.PersistChatEventsAsync(
-                    new List<ChatEvent>(_chatEvents), 
-                    _cts.Token));
-                _chatEvents.Clear();
+                if (_chatEvents.Count > 0)
+                {
+                    _logger.LogDebug("Flushing {Count} chat events", _chatEvents.Count);
+                    tasks.Add(_persistence.PersistChatEventsAsync(
+                        new List<ChatEvent>(_chatEvents), 
+                        _cts.Token));
+                    _chatEvents.Clear();
+                }
+                
+                if (_giftEvents.Count > 0)
+                {
+                    _logger.LogDebug("Flushing {Count} gift events", _giftEvents.Count);
+                    tasks.Add(_persistence.PersistGiftEventsAsync(
+                        new List<GiftEvent>(_giftEvents), 
+                        _cts.Token));
+                    _giftEvents.Clear();
+                }
+                
+                if (_socialEvents.Count > 0)
+                {
+                    _logger.LogDebug("Flushing {Count} social events", _socialEvents.Count);
+                    tasks.Add(_persistence.PersistSocialEventsAsync(
+                        new List<SocialEvent>(_socialEvents), 
+                        _cts.Token));
+                    _socialEvents.Clear();
+                }
+                
+                if (_subscriptionEvents.Count > 0)
+                {
+                    _logger.LogDebug("Flushing {Count} subscription events", _subscriptionEvents.Count);
+                    tasks.Add(_persistence.PersistSubscriptionEventsAsync(
+                        new List<SubscriptionEvent>(_subscriptionEvents), 
+                        _cts.Token));
+                    _subscriptionEvents.Clear();
+                }
+                
+                if (_controlEvents.Count > 0)
+                {
+                    _logger.LogDebug("Flushing {Count} control events", _controlEvents.Count);
+                    tasks.Add(_persistence.PersistControlEventsAsync(
+                        new List<ControlEvent>(_controlEvents), 
+                        _cts.Token));
+                    _controlEvents.Clear();
+                }
+                
+                if (_roomStatsEvents.Count > 0)
+                {
+                    _logger.LogDebug("Flushing {Count} room stats events", _roomStatsEvents.Count);
+                    tasks.Add(_persistence.PersistRoomStatsEventsAsync(
+                        new List<RoomStatsEvent>(_roomStatsEvents), 
+                        _cts.Token));
+                    _roomStatsEvents.Clear();
+                }
+                
+                if (tasks.Count > 0)
+                {
+                    _logger.LogDebug("Flushing {Count} batches of events", tasks.Count);
+                    await Task.WhenAll(tasks);
+                    _logger.LogDebug("Flushed all batches successfully");
+                }
             }
-            
-            if (_giftEvents.Count > 0)
+            catch (Exception ex)
             {
-                tasks.Add(_persistence.PersistGiftEventsAsync(
-                    new List<GiftEvent>(_giftEvents), 
-                    _cts.Token));
-                _giftEvents.Clear();
-            }
-            
-            if (_socialEvents.Count > 0)
-            {
-                tasks.Add(_persistence.PersistSocialEventsAsync(
-                    new List<SocialEvent>(_socialEvents), 
-                    _cts.Token));
-                _socialEvents.Clear();
-            }
-            
-            if (_subscriptionEvents.Count > 0)
-            {
-                tasks.Add(_persistence.PersistSubscriptionEventsAsync(
-                    new List<SubscriptionEvent>(_subscriptionEvents), 
-                    _cts.Token));
-                _subscriptionEvents.Clear();
-            }
-            
-            if (_controlEvents.Count > 0)
-            {
-                tasks.Add(_persistence.PersistControlEventsAsync(
-                    new List<ControlEvent>(_controlEvents), 
-                    _cts.Token));
-                _controlEvents.Clear();
-            }
-            
-            if (_roomStatsEvents.Count > 0)
-            {
-                tasks.Add(_persistence.PersistRoomStatsEventsAsync(
-                    new List<RoomStatsEvent>(_roomStatsEvents), 
-                    _cts.Token));
-                _roomStatsEvents.Clear();
-            }
-            
-            if (tasks.Count > 0)
-            {
-                _logger.LogDebug("Flushing {Count} batches of events", tasks.Count);
-                await Task.WhenAll(tasks);
-                _logger.LogDebug("Flushed all batches successfully");
+                _logger.LogError(ex, "Error flushing events");
+                throw;
             }
         }
 

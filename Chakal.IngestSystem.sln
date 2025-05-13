@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chakal.Infrastructure.Model
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chakal.IngestSystem", "Chakal.IngestSystem\Chakal.IngestSystem.csproj", "{7643D841-A4C0-4310-B50E-B04159E53B21}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chakal.Tests", "Chakal.Tests\Chakal.Tests.csproj", "{4DAB15E5-9F6A-43F2-937F-A95735FA459A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -42,5 +44,9 @@ Global
 		{7643D841-A4C0-4310-B50E-B04159E53B21}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7643D841-A4C0-4310-B50E-B04159E53B21}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7643D841-A4C0-4310-B50E-B04159E53B21}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4DAB15E5-9F6A-43F2-937F-A95735FA459A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4DAB15E5-9F6A-43F2-937F-A95735FA459A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4DAB15E5-9F6A-43F2-937F-A95735FA459A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4DAB15E5-9F6A-43F2-937F-A95735FA459A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

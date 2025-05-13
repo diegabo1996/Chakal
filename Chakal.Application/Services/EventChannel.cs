@@ -92,11 +92,23 @@ namespace Chakal.Application.Services
         {
             return _channel.Writer.WriteAsync(chatEvent, cancellationToken);
         }
+        
+        /// <inheritdoc />
+        public bool TryWrite(ChatEvent chatEvent)
+        {
+            return _channel.Writer.TryWrite(chatEvent);
+        }
 
         /// <inheritdoc />
         public ValueTask WriteAsync(GiftEvent giftEvent, CancellationToken cancellationToken = default)
         {
             return _channel.Writer.WriteAsync(giftEvent, cancellationToken);
+        }
+        
+        /// <inheritdoc />
+        public bool TryWrite(GiftEvent giftEvent)
+        {
+            return _channel.Writer.TryWrite(giftEvent);
         }
 
         /// <inheritdoc />
@@ -104,11 +116,23 @@ namespace Chakal.Application.Services
         {
             return _channel.Writer.WriteAsync(socialEvent, cancellationToken);
         }
+        
+        /// <inheritdoc />
+        public bool TryWrite(SocialEvent socialEvent)
+        {
+            return _channel.Writer.TryWrite(socialEvent);
+        }
 
         /// <inheritdoc />
         public ValueTask WriteAsync(SubscriptionEvent subscriptionEvent, CancellationToken cancellationToken = default)
         {
             return _channel.Writer.WriteAsync(subscriptionEvent, cancellationToken);
+        }
+        
+        /// <inheritdoc />
+        public bool TryWrite(SubscriptionEvent subscriptionEvent)
+        {
+            return _channel.Writer.TryWrite(subscriptionEvent);
         }
 
         /// <inheritdoc />
@@ -116,11 +140,23 @@ namespace Chakal.Application.Services
         {
             return _channel.Writer.WriteAsync(controlEvent, cancellationToken);
         }
+        
+        /// <inheritdoc />
+        public bool TryWrite(ControlEvent controlEvent)
+        {
+            return _channel.Writer.TryWrite(controlEvent);
+        }
 
         /// <inheritdoc />
         public ValueTask WriteAsync(RoomStatsEvent roomStatsEvent, CancellationToken cancellationToken = default)
         {
             return _channel.Writer.WriteAsync(roomStatsEvent, cancellationToken);
+        }
+        
+        /// <inheritdoc />
+        public bool TryWrite(RoomStatsEvent roomStatsEvent)
+        {
+            return _channel.Writer.TryWrite(roomStatsEvent);
         }
 
         /// <inheritdoc />

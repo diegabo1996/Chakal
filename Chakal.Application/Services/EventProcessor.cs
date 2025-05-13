@@ -34,8 +34,11 @@ namespace Chakal.Application.Services
         /// <inheritdoc />
         public async Task ProcessChatEventAsync(ChatEvent chatEvent, CancellationToken cancellationToken = default)
         {
-            await _broadcastChannel.WriteAsync(chatEvent, cancellationToken);
+            // First ensure persistence (reliable delivery)
             await _persistChannel.WriteAsync(chatEvent, cancellationToken);
+            
+            // Then broadcast (best-effort)
+            _broadcastChannel.TryWrite(chatEvent);
             
             _logger.LogDebug(
                 "Processed chat from {Username} ({UserId}): {Message}", 
@@ -48,15 +51,17 @@ namespace Chakal.Application.Services
         /// <inheritdoc />
         public async Task ProcessGiftEventAsync(GiftEvent giftEvent, CancellationToken cancellationToken = default)
         {
-            await _broadcastChannel.WriteAsync(giftEvent, cancellationToken);
+            // First ensure persistence (reliable delivery)
             await _persistChannel.WriteAsync(giftEvent, cancellationToken);
             
+            // Then broadcast (best-effort)
+            _broadcastChannel.TryWrite(giftEvent);
+            
             _logger.LogDebug(
-                "Processed gift from {Username} ({UserId}): {GiftName} x{Count} ({Diamonds} diamonds)", 
+                "Processed gift from {Username} ({UserId}): {GiftName} worth {DiamondCount} diamonds", 
                 giftEvent.Username, 
                 giftEvent.UserId, 
                 giftEvent.GiftName, 
-                giftEvent.StreakTotal, 
                 giftEvent.DiamondCount
             );
         }
@@ -64,25 +69,32 @@ namespace Chakal.Application.Services
         /// <inheritdoc />
         public async Task ProcessSocialEventAsync(SocialEvent socialEvent, CancellationToken cancellationToken = default)
         {
-            await _broadcastChannel.WriteAsync(socialEvent, cancellationToken);
+            // First ensure persistence (reliable delivery)
             await _persistChannel.WriteAsync(socialEvent, cancellationToken);
             
+            // Then broadcast (best-effort)
+            _broadcastChannel.TryWrite(socialEvent);
+            
             _logger.LogDebug(
-                "Processed social event from {Username} ({UserId}): {SocialType}", 
+                "Processed social event from {Username} ({UserId}): {SocialType} x{Count}", 
                 socialEvent.Username, 
                 socialEvent.UserId, 
-                socialEvent.SocialType
+                socialEvent.SocialType, 
+                socialEvent.Count
             );
         }
 
         /// <inheritdoc />
         public async Task ProcessSubscriptionEventAsync(SubscriptionEvent subscriptionEvent, CancellationToken cancellationToken = default)
         {
-            await _broadcastChannel.WriteAsync(subscriptionEvent, cancellationToken);
+            // First ensure persistence (reliable delivery)
             await _persistChannel.WriteAsync(subscriptionEvent, cancellationToken);
             
+            // Then broadcast (best-effort)
+            _broadcastChannel.TryWrite(subscriptionEvent);
+            
             _logger.LogDebug(
-                "Processed subscription from {Username} ({UserId}): Tier {Tier}, Month {Month}", 
+                "Processed subscription from {Username} ({UserId}): Tier {SubTier} for {MonthsTotal} months", 
                 subscriptionEvent.Username, 
                 subscriptionEvent.UserId, 
                 subscriptionEvent.SubTier, 
@@ -93,27 +105,34 @@ namespace Chakal.Application.Services
         /// <inheritdoc />
         public async Task ProcessControlEventAsync(ControlEvent controlEvent, CancellationToken cancellationToken = default)
         {
-            await _broadcastChannel.WriteAsync(controlEvent, cancellationToken);
+            // First ensure persistence (reliable delivery)
             await _persistChannel.WriteAsync(controlEvent, cancellationToken);
             
-            _logger.LogInformation(
-                "Processed control event: {ControlType} with value {Value}", 
+            // Then broadcast (best-effort)
+            _broadcastChannel.TryWrite(controlEvent);
+            
+            _logger.LogDebug(
+                "Processed control event: {ControlType} for room {RoomId}", 
                 controlEvent.ControlType, 
-                controlEvent.Value
+                controlEvent.RoomId
             );
         }
 
         /// <inheritdoc />
         public async Task ProcessRoomStatsEventAsync(RoomStatsEvent roomStatsEvent, CancellationToken cancellationToken = default)
         {
-            await _broadcastChannel.WriteAsync(roomStatsEvent, cancellationToken);
+            // First ensure persistence (reliable delivery)
             await _persistChannel.WriteAsync(roomStatsEvent, cancellationToken);
             
+            // Then broadcast (best-effort)
+            _broadcastChannel.TryWrite(roomStatsEvent);
+            
             _logger.LogDebug(
-                "Processed room stats: {ViewerCount} viewers, {LikeCount} likes, {ShareCount} shares", 
+                "Processed room stats: {ViewerCount} viewers, {LikeCount} likes, {ShareCount} shares for room {RoomId}", 
                 roomStatsEvent.ViewerCount, 
                 roomStatsEvent.LikeCount, 
-                roomStatsEvent.ShareCount
+                roomStatsEvent.ShareCount, 
+                roomStatsEvent.RoomId
             );
         }
     }

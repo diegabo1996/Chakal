@@ -9,3 +9,4 @@ C:\Solutions\Chakal\Chakal.Infrastructure.Models\obj\Debug\net8.0\Chakal.Infrast
 C:\Solutions\Chakal\Chakal.Infrastructure.Models\obj\Debug\net8.0\refint\Chakal.Infrastructure.Models.dll
 C:\Solutions\Chakal\Chakal.Infrastructure.Models\obj\Debug\net8.0\Chakal.Infrastructure.Models.pdb
 C:\Solutions\Chakal\Chakal.Infrastructure.Models\obj\Debug\net8.0\ref\Chakal.Infrastructure.Models.dll
+C:\Solutions\Chakal\Chakal.Infrastructure.Models\obj\Debug\net8.0\Chakal.Infrastructure.Models.sourcelink.json

@@ -8,6 +8,11 @@ namespace Chakal.Core.Models.Events
     public enum SocialInteractionType
     {
         /// <summary>
+        /// Unknown interaction
+        /// </summary>
+        Unknown = 0,
+
+        /// <summary>
         /// Like interaction
         /// </summary>
         Like = 1,

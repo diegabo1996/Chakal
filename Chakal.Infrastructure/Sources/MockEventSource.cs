@@ -23,6 +23,7 @@ namespace Chakal.Infrastructure.Sources
         private Task? _runningTask;
         private bool _disposed;
         private bool _isConnected;
+        private EventProcessingDelegate? _customProcessor;
         
         /// <summary>
         /// Gets a value indicating whether the source is currently connected
@@ -65,6 +66,12 @@ namespace Chakal.Infrastructure.Sources
         /// <inheritdoc />
         public Task StartAsync(CancellationToken cancellationToken = default)
         {
+            return StartAsync(null, cancellationToken);
+        }
+        
+        /// <inheritdoc />
+        public Task StartAsync(EventProcessingDelegate? processor, CancellationToken cancellationToken = default)
+        {
             _logger.LogInformation("Starting mock event source for @{HostName}", _hostName);
             
             if (_isConnected)
@@ -74,7 +81,8 @@ namespace Chakal.Infrastructure.Sources
             }
             
             _isConnected = true;
-            _runningTask = Task.Run(RunAsync);
+            _customProcessor = processor;
+            _runningTask = Task.Run(() => RunAsync(cancellationToken));
             
             // Send control event for room start
             var startEvent = new ControlEvent
@@ -85,7 +93,15 @@ namespace Chakal.Infrastructure.Sources
                 Value = _hostName
             };
             
-            _ = _eventProcessor.ProcessControlEventAsync(startEvent);
+            // Use custom processor if provided, otherwise use event processor
+            if (_customProcessor != null)
+            {
+                _ = _customProcessor(startEvent, cancellationToken);
+            }
+            else
+            {
+                _ = _eventProcessor.ProcessControlEventAsync(startEvent, cancellationToken);
+            }
             
             _logger.LogInformation("Mock event source started for @{HostName}", _hostName);
             
@@ -95,15 +111,35 @@ namespace Chakal.Infrastructure.Sources
         /// <inheritdoc />
         public async Task StopAsync(CancellationToken cancellationToken = default)
         {
-            _logger.LogInformation("Stopping mock event source for @{HostName}", _hostName);
-            
             if (!_isConnected)
             {
                 _logger.LogWarning("Mock event source is not running");
                 return;
             }
             
+            _logger.LogInformation("Stopping mock event source");
+            
+            // Send control event for room end
+            var endEvent = new ControlEvent
+            {
+                EventTime = DateTime.UtcNow,
+                RoomId = RoomId,
+                ControlType = ControlEventType.LiveEnd,
+                Value = _hostName
+            };
+            
+            // Use custom processor if provided, otherwise use event processor
+            if (_customProcessor != null)
+            {
+                await _customProcessor(endEvent, cancellationToken);
+            }
+            else
+            {
+                await _eventProcessor.ProcessControlEventAsync(endEvent, cancellationToken);
+            }
+            
             _cts.Cancel();
+            _isConnected = false;
             
             if (_runningTask != null)
             {
@@ -121,229 +157,234 @@ namespace Chakal.Infrastructure.Sources
                 }
             }
             
-            _isConnected = false;
-            
-            // Send control event for room end
-            var endEvent = new ControlEvent
-            {
-                EventTime = DateTime.UtcNow,
-                RoomId = RoomId,
-                ControlType = ControlEventType.LiveEnd,
-                Value = _hostName
-            };
-            
-            await _eventProcessor.ProcessControlEventAsync(endEvent);
-            
-            _logger.LogInformation("Mock event source stopped for @{HostName}", _hostName);
+            _logger.LogInformation("Mock event source stopped");
         }
         
-        private async Task RunAsync()
+        private async Task RunAsync(CancellationToken cancellationToken)
         {
-            _logger.LogDebug("Mock event generator task started");
+            _logger.LogInformation("Mock event generation task started");
             
             try
             {
-                uint viewerCount = 100;
-                uint likeCount = 0;
-                uint shareCount = 0;
-                ulong messageId = 1;
-                
-                // Send initial room stats
-                await _eventProcessor.ProcessRoomStatsEventAsync(new RoomStatsEvent
+                while (!_cts.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
                 {
-                    EventTime = DateTime.UtcNow,
-                    RoomId = RoomId,
-                    ViewerCount = viewerCount,
-                    LikeCount = likeCount,
-                    ShareCount = shareCount
-                });
-                
-                while (!_cts.Token.IsCancellationRequested)
-                {
-                    // Wait for the next interval
-                    await Task.Delay(_intervalMs, _cts.Token);
+                    // Generate a random event
+                    await GenerateRandomEventAsync(cancellationToken);
                     
-                    // Update stats
-                    viewerCount = (uint)Math.Max(1, viewerCount + _random.Next(-10, 20));
-                    likeCount += (uint)_random.Next(0, 100);
-                    shareCount += (uint)_random.Next(0, 5);
-                    
-                    // Send room stats update (20% chance)
-                    if (_random.Next(100) < 20)
-                    {
-                        await _eventProcessor.ProcessRoomStatsEventAsync(new RoomStatsEvent
-                        {
-                            EventTime = DateTime.UtcNow,
-                            RoomId = RoomId,
-                            ViewerCount = viewerCount,
-                            LikeCount = likeCount,
-                            ShareCount = shareCount
-                        });
-                    }
-                    
-                    // Decide event type
-                    int eventType = _random.Next(100);
-                    
-                    if (eventType < 60) // 60% chance of chat message
-                    {
-                        var chatEvent = new ChatEvent
-                        {
-                            EventTime = DateTime.UtcNow,
-                            RoomId = RoomId,
-                            MessageId = messageId++,
-                            UserId = (ulong)_random.Next(10000, 99999),
-                            Username = $"user_{_random.Next(1000, 9999)}",
-                            Text = GetRandomMessage(),
-                            ReplyToId = 0,
-                            DeviceType = "unknown"
-                        };
-                        
-                        await _eventProcessor.ProcessChatEventAsync(chatEvent);
-                    }
-                    else if (eventType < 75) // 15% chance of gift
-                    {
-                        var giftEvent = new GiftEvent
-                        {
-                            EventTime = DateTime.UtcNow,
-                            RoomId = RoomId,
-                            UserId = (ulong)_random.Next(10000, 99999),
-                            Username = $"user_{_random.Next(1000, 9999)}",
-                            GiftId = (uint)_random.Next(1, 100),
-                            GiftName = GetRandomGiftName(),
-                            DiamondCount = (uint)_random.Next(1, 1000),
-                            ComboId = (ulong)_random.Next(100000, 999999),
-                            StreakTotal = (uint)_random.Next(1, 10),
-                            RepeatEnd = _random.Next(100) < 80 // 80% chance of repeat end
-                        };
-                        
-                        await _eventProcessor.ProcessGiftEventAsync(giftEvent);
-                    }
-                    else if (eventType < 85) // 10% chance of like
-                    {
-                        var likeEvent = new SocialEvent
-                        {
-                            EventTime = DateTime.UtcNow,
-                            RoomId = RoomId,
-                            UserId = (ulong)_random.Next(10000, 99999),
-                            Username = $"user_{_random.Next(1000, 9999)}",
-                            SocialType = SocialInteractionType.Like,
-                            Count = (uint)_random.Next(1, 10)
-                        };
-                        
-                        await _eventProcessor.ProcessSocialEventAsync(likeEvent);
-                    }
-                    else if (eventType < 90) // 5% chance of follow
-                    {
-                        var followEvent = new SocialEvent
-                        {
-                            EventTime = DateTime.UtcNow,
-                            RoomId = RoomId,
-                            UserId = (ulong)_random.Next(10000, 99999),
-                            Username = $"user_{_random.Next(1000, 9999)}",
-                            SocialType = SocialInteractionType.Follow,
-                            Count = 1
-                        };
-                        
-                        await _eventProcessor.ProcessSocialEventAsync(followEvent);
-                    }
-                    else if (eventType < 95) // 5% chance of share
-                    {
-                        var shareEvent = new SocialEvent
-                        {
-                            EventTime = DateTime.UtcNow,
-                            RoomId = RoomId,
-                            UserId = (ulong)_random.Next(10000, 99999),
-                            Username = $"user_{_random.Next(1000, 9999)}",
-                            SocialType = SocialInteractionType.Share,
-                            Count = 1
-                        };
-                        
-                        await _eventProcessor.ProcessSocialEventAsync(shareEvent);
-                    }
-                    else // 5% chance of join
-                    {
-                        var joinEvent = new SocialEvent
-                        {
-                            EventTime = DateTime.UtcNow,
-                            RoomId = RoomId,
-                            UserId = (ulong)_random.Next(10000, 99999),
-                            Username = $"user_{_random.Next(1000, 9999)}",
-                            SocialType = SocialInteractionType.Join,
-                            Count = 1
-                        };
-                        
-                        await _eventProcessor.ProcessSocialEventAsync(joinEvent);
-                    }
+                    // Wait for the next event
+                    await Task.Delay(_intervalMs, cancellationToken);
                 }
             }
-            catch (OperationCanceledException) when (_cts.Token.IsCancellationRequested)
+            catch (OperationCanceledException) when (_cts.IsCancellationRequested || cancellationToken.IsCancellationRequested)
             {
                 // Normal cancellation
-                _logger.LogDebug("Mock event generator task cancelled");
+                _logger.LogDebug("Mock event generation task cancelled");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error in mock event generator task");
+                _logger.LogError(ex, "Error in mock event generation task");
             }
-            finally
+            
+            _logger.LogInformation("Mock event generation task stopped");
+        }
+        
+        private async Task GenerateRandomEventAsync(CancellationToken cancellationToken)
+        {
+            // Pick a random event type
+            var eventType = _random.Next(0, 6);
+            
+            try
             {
-                _logger.LogInformation("Mock event generator task stopped");
+                switch (eventType)
+                {
+                    case 0:
+                        await GenerateChatEventAsync(cancellationToken);
+                        break;
+                        
+                    case 1:
+                        await GenerateGiftEventAsync(cancellationToken);
+                        break;
+                        
+                    case 2:
+                        await GenerateSocialEventAsync(cancellationToken);
+                        break;
+                        
+                    case 3:
+                        await GenerateSubscriptionEventAsync(cancellationToken);
+                        break;
+                        
+                    case 4:
+                        await GenerateRoomStatsEventAsync(cancellationToken);
+                        break;
+                        
+                    case 5:
+                        // Control events are only generated at start/stop
+                        await GenerateChatEventAsync(cancellationToken);
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error generating mock event");
             }
         }
         
-        private string GetRandomMessage()
+        private async Task GenerateChatEventAsync(CancellationToken cancellationToken)
         {
-            string[] messages =
+            var chatEvent = new ChatEvent
             {
-                "Hello from the chat!",
-                "Great stream today!",
-                "🔥🔥🔥",
-                "I love your content!",
-                "Greetings from Brazil!",
-                "Can you say hi to me?",
-                "This is amazing",
-                "LOL 😂",
-                "When is the next stream?",
-                "I've been following for years!",
-                "First time here, love the vibe",
-                "👋👋👋",
-                "omg this is so good",
-                "How are you today?",
-                "What's your favorite song?",
-                "Can you dance to this?",
-                "Do you have pets?",
-                "Have you been to Paris?",
-                "Sing a song please!",
-                "I'm new here, how often do you stream?"
+                EventTime = DateTime.UtcNow,
+                RoomId = RoomId,
+                MessageId = (ulong)_random.Next(100000, 999999),
+                UserId = (ulong)_random.Next(10000, 99999),
+                Username = $"MockUser{_random.Next(1, 100)}",
+                Text = $"Mock chat message {_random.Next(1000, 9999)}",
+                DeviceType = _random.Next(0, 2) == 0 ? "Android" : "iOS"
             };
             
-            return messages[_random.Next(messages.Length)];
+            if (_random.Next(0, 10) < 3) // 30% chance to have emotes
+            {
+                chatEvent.Emotes = new Dictionary<string, uint>
+                {
+                    { "heart", (uint)_random.Next(1, 5) },
+                    { "fire", (uint)_random.Next(1, 3) }
+                };
+            }
+            
+            if (_random.Next(0, 10) < 2) // 20% chance to be a reply
+            {
+                chatEvent.ReplyToId = (ulong)_random.Next(100000, 999999);
+            }
+            
+            _logger.LogDebug("Generated chat event: {Username}: {Message}", chatEvent.Username, chatEvent.Text);
+            
+            // Use custom processor if provided, otherwise use event processor
+            if (_customProcessor != null)
+            {
+                await _customProcessor(chatEvent, cancellationToken);
+            }
+            else
+            {
+                await _eventProcessor.ProcessChatEventAsync(chatEvent, cancellationToken);
+            }
         }
         
-        private string GetRandomGiftName()
+        private async Task GenerateGiftEventAsync(CancellationToken cancellationToken)
         {
-            string[] giftNames =
+            string[] giftNames = { "Rose", "Ice Cream", "Diamond", "Crown", "Star" };
+            uint[] diamondValues = { 1, 5, 10, 50, 100 };
+            
+            var index = _random.Next(0, giftNames.Length);
+            
+            var giftEvent = new GiftEvent
             {
-                "Rose",
-                "Ice Cream",
-                "Guitar",
-                "Doughnut",
-                "Star",
-                "Rocket",
-                "Heart",
-                "Universe",
-                "Lion",
-                "Crown",
-                "Diamond",
-                "Perfume",
-                "Cake",
-                "Microphone",
-                "Trophy"
+                EventTime = DateTime.UtcNow,
+                RoomId = RoomId,
+                UserId = (ulong)_random.Next(10000, 99999),
+                Username = $"MockUser{_random.Next(1, 100)}",
+                GiftId = (uint)(_random.Next(1000, 2000) + index),
+                GiftName = giftNames[index],
+                DiamondCount = diamondValues[index],
+                ComboId = _random.Next(0, 10) < 3 ? (ulong)_random.Next(10000, 99999) : 0, // 30% chance for combo
+                StreakTotal = _random.Next(0, 10) < 3 ? (uint)_random.Next(2, 10) : 1, // 30% chance for streak
+                RepeatEnd = _random.Next(0, 10) < 8 // 80% chance to be end of streak/repeat
             };
             
-            return giftNames[_random.Next(giftNames.Length)];
+            _logger.LogDebug("Generated gift event: {Username} sent {GiftName} (worth {Diamonds} diamonds)",
+                giftEvent.Username, giftEvent.GiftName, giftEvent.DiamondCount);
+            
+            // Use custom processor if provided, otherwise use event processor
+            if (_customProcessor != null)
+            {
+                await _customProcessor(giftEvent, cancellationToken);
+            }
+            else
+            {
+                await _eventProcessor.ProcessGiftEventAsync(giftEvent, cancellationToken);
+            }
         }
-
+        
+        private async Task GenerateSocialEventAsync(CancellationToken cancellationToken)
+        {
+            var socialTypeValues = Enum.GetValues<SocialInteractionType>();
+            var socialType = socialTypeValues[_random.Next(0, socialTypeValues.Length)];
+            
+            var socialEvent = new SocialEvent
+            {
+                EventTime = DateTime.UtcNow,
+                RoomId = RoomId,
+                UserId = (ulong)_random.Next(10000, 99999),
+                Username = $"MockUser{_random.Next(1, 100)}",
+                SocialType = socialType,
+                Count = (uint)_random.Next(1, 5)
+            };
+            
+            _logger.LogDebug("Generated social event: {Username} {SocialType} x{Count}",
+                socialEvent.Username, socialEvent.SocialType, socialEvent.Count);
+            
+            // Use custom processor if provided, otherwise use event processor
+            if (_customProcessor != null)
+            {
+                await _customProcessor(socialEvent, cancellationToken);
+            }
+            else
+            {
+                await _eventProcessor.ProcessSocialEventAsync(socialEvent, cancellationToken);
+            }
+        }
+        
+        private async Task GenerateSubscriptionEventAsync(CancellationToken cancellationToken)
+        {
+            var subscriptionEvent = new SubscriptionEvent
+            {
+                EventTime = DateTime.UtcNow,
+                RoomId = RoomId,
+                UserId = (ulong)_random.Next(10000, 99999),
+                Username = $"MockUser{_random.Next(1, 100)}",
+                SubTier = (byte)_random.Next(1, 4),
+                MonthsTotal = (ushort)_random.Next(1, 24),
+                IsRenew = _random.Next(0, 10) < 7 // 70% chance to be renewal
+            };
+            
+            _logger.LogDebug("Generated subscription event: {Username} subscribed tier {Tier} for {Months} months (Renewal: {IsRenew})",
+                subscriptionEvent.Username, subscriptionEvent.SubTier, subscriptionEvent.MonthsTotal, subscriptionEvent.IsRenew);
+            
+            // Use custom processor if provided, otherwise use event processor
+            if (_customProcessor != null)
+            {
+                await _customProcessor(subscriptionEvent, cancellationToken);
+            }
+            else
+            {
+                await _eventProcessor.ProcessSubscriptionEventAsync(subscriptionEvent, cancellationToken);
+            }
+        }
+        
+        private async Task GenerateRoomStatsEventAsync(CancellationToken cancellationToken)
+        {
+            var roomStatsEvent = new RoomStatsEvent
+            {
+                EventTime = DateTime.UtcNow,
+                RoomId = RoomId,
+                ViewerCount = (uint)_random.Next(50, 500),
+                LikeCount = (uint)_random.Next(100, 2000),
+                ShareCount = (uint)_random.Next(10, 100)
+            };
+            
+            _logger.LogDebug("Generated room stats event: {Viewers} viewers, {Likes} likes, {Shares} shares",
+                roomStatsEvent.ViewerCount, roomStatsEvent.LikeCount, roomStatsEvent.ShareCount);
+            
+            // Use custom processor if provided, otherwise use event processor
+            if (_customProcessor != null)
+            {
+                await _customProcessor(roomStatsEvent, cancellationToken);
+            }
+            else
+            {
+                await _eventProcessor.ProcessRoomStatsEventAsync(roomStatsEvent, cancellationToken);
+            }
+        }
+        
         /// <inheritdoc />
         public void Dispose()
         {
@@ -355,7 +396,7 @@ namespace Chakal.Infrastructure.Sources
             
             _logger.LogInformation("Mock event source disposed");
         }
-
+        
         /// <inheritdoc />
         public async ValueTask DisposeAsync()
         {

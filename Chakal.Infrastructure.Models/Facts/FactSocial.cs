@@ -10,6 +10,10 @@ namespace Chakal.Infrastructure.Models.Facts
         /// <summary>
         /// Like interaction
         /// </summary>
+        Unknown = 0,
+        /// <summary>
+        /// Like interaction
+        /// </summary>
         Like = 1,
         
         /// <summary>

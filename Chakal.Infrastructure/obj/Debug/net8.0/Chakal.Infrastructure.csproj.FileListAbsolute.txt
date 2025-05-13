@@ -15,3 +15,6 @@ C:\Solutions\Chakal\Chakal.Infrastructure\obj\Debug\net8.0\Chakal.Infrastructure
 C:\Solutions\Chakal\Chakal.Infrastructure\obj\Debug\net8.0\refint\Chakal.Infrastructure.dll
 C:\Solutions\Chakal\Chakal.Infrastructure\obj\Debug\net8.0\Chakal.Infrastructure.pdb
 C:\Solutions\Chakal\Chakal.Infrastructure\obj\Debug\net8.0\ref\Chakal.Infrastructure.dll
+C:\Solutions\Chakal\Chakal.Infrastructure\obj\Debug\net8.0\Chakal.Infrastructure.sourcelink.json
+C:\Solutions\Chakal\Chakal.Infrastructure\bin\Debug\net8.0\Chakal.Application.dll
+C:\Solutions\Chakal\Chakal.Infrastructure\bin\Debug\net8.0\Chakal.Application.pdb

@@ -13,3 +13,4 @@ C:\Solutions\Chakal\Chakal.Application\obj\Debug\net8.0\Chakal.Application.dll
 C:\Solutions\Chakal\Chakal.Application\obj\Debug\net8.0\refint\Chakal.Application.dll
 C:\Solutions\Chakal\Chakal.Application\obj\Debug\net8.0\Chakal.Application.pdb
 C:\Solutions\Chakal\Chakal.Application\obj\Debug\net8.0\ref\Chakal.Application.dll
+C:\Solutions\Chakal\Chakal.Application\obj\Debug\net8.0\Chakal.Application.sourcelink.json

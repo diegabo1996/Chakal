@@ -1,20 +1,19 @@
 using System;
-using System.Threading.Tasks;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace Chakal.Infrastructure.Persistence
 {
     /// <summary>
-    /// Factory for creating connections to ClickHouse database
+    /// Factory for creating ClickHouse connections
     /// </summary>
     public class ClickHouseConnectionFactory : IDisposable, IAsyncDisposable
     {
         private readonly ILogger<ClickHouseConnectionFactory> _logger;
         private readonly string _connectionString;
-        private readonly bool _debugMode;
-        private object? _connection; // Placeholder for ClickHouseConnection
+        private readonly SemaphoreSlim _connectionSemaphore = new(1, 1);
         private bool _disposed;
         
         /// <summary>
@@ -22,86 +21,48 @@ namespace Chakal.Infrastructure.Persistence
         /// </summary>
         /// <param name="configuration">Application configuration</param>
         /// <param name="logger">Logger</param>
-        /// <exception cref="ArgumentException">Thrown when ClickHouse connection string is missing</exception>
-        public ClickHouseConnectionFactory(IConfiguration configuration, ILogger<ClickHouseConnectionFactory> logger)
+        public ClickHouseConnectionFactory(
+            IConfiguration configuration,
+            ILogger<ClickHouseConnectionFactory> logger)
         {
             _logger = logger;
+            _connectionString = configuration["CLICKHOUSE_CONN"] ?? "Host=192.168.1.230;Port=9000;Database=chakal;User=default;Password=Chakal123!";
             
-            _connectionString = configuration["CLICKHOUSE_CONN"] ?? "";
-            if (string.IsNullOrWhiteSpace(_connectionString))
-            {
-                throw new ArgumentException("CLICKHOUSE_CONN environment variable is required");
-            }
-            
-            // Check if we're in debug mode
-            if (bool.TryParse(configuration["DEBUG_MODE"], out bool parsed))
-            {
-                _debugMode = parsed;
-            }
-            
-            _logger.LogInformation("ClickHouse connection factory initialized (Debug mode: {DebugMode})", _debugMode);
+            _logger.LogInformation("ClickHouse connection factory initialized with connection: {ConnectionString}", 
+                _connectionString.Replace("Password=", "Password=***"));
         }
         
         /// <summary>
-        /// Gets the ClickHouse connection
+        /// Gets a connection to ClickHouse
         /// </summary>
         /// <param name="cancellationToken">Cancellation token</param>
-        /// <returns>The ClickHouse connection</returns>
+        /// <returns>A task representing the connection operation</returns>
         public Task<object?> GetConnectionAsync(CancellationToken cancellationToken = default)
         {
-            // In debug mode, we just log but don't actually try to connect
-            if (_debugMode)
-            {
-                _logger.LogInformation("Debug mode active: Simulating ClickHouse connection");
-                return Task.FromResult<object?>(null);
-            }
-            
-            _logger.LogWarning("ClickHouse connection not available without the actual ClickHouse library");
+            _logger.LogInformation("MOCK: Getting ClickHouse connection");
             return Task.FromResult<object?>(null);
         }
         
-        /// <summary>
-        /// Creates a new command
-        /// </summary>
-        /// <param name="commandText">SQL command text</param>
-        /// <param name="cancellationToken">Cancellation token</param>
-        /// <returns>A new ClickHouseCommand</returns>
-        public Task<object?> CreateCommandAsync(
-            string commandText, 
-            CancellationToken cancellationToken = default)
-        {
-            // In debug mode, we just log but don't actually try to connect
-            if (_debugMode)
-            {
-                _logger.LogInformation("Debug mode active: Simulating ClickHouse command: {CommandText}", 
-                    commandText?.Length > 100 ? commandText.Substring(0, 100) + "..." : commandText);
-            }
-            else 
-            {
-                _logger.LogWarning("ClickHouse command not available without the actual ClickHouse library");
-            }
-            
-            return Task.FromResult<object?>(null);
-        }
-
         /// <inheritdoc />
         public void Dispose()
         {
             if (_disposed) return;
             
+            _connectionSemaphore.Dispose();
             _disposed = true;
             
-            _logger.LogInformation("ClickHouse connection disposed");
+            _logger.LogInformation("ClickHouse connection factory disposed");
         }
-
+        
         /// <inheritdoc />
         public ValueTask DisposeAsync()
         {
             if (_disposed) return ValueTask.CompletedTask;
             
+            _connectionSemaphore.Dispose();
             _disposed = true;
             
-            _logger.LogInformation("ClickHouse connection asynchronously disposed");
+            _logger.LogInformation("ClickHouse connection factory disposed asynchronously");
             return ValueTask.CompletedTask;
         }
     }

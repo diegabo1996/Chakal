@@ -54,3 +54,9 @@ C:\Solutions\Chakal\Chakal.IngestSystem\obj\Debug\net8.0\refint\Chakal.IngestSys
 C:\Solutions\Chakal\Chakal.IngestSystem\obj\Debug\net8.0\Chakal.IngestSystem.pdb
 C:\Solutions\Chakal\Chakal.IngestSystem\obj\Debug\net8.0\Chakal.IngestSystem.genruntimeconfig.cache
 C:\Solutions\Chakal\Chakal.IngestSystem\obj\Debug\net8.0\ref\Chakal.IngestSystem.dll
+C:\Solutions\Chakal\Chakal.IngestSystem\bin\Debug\net8.0\Microsoft.Bcl.AsyncInterfaces.dll
+C:\Solutions\Chakal\Chakal.IngestSystem\bin\Debug\net8.0\Microsoft.Extensions.Diagnostics.HealthChecks.dll
+C:\Solutions\Chakal\Chakal.IngestSystem\bin\Debug\net8.0\Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions.dll
+C:\Solutions\Chakal\Chakal.IngestSystem\bin\Debug\net8.0\Microsoft.Extensions.FileProviders.Abstractions.dll
+C:\Solutions\Chakal\Chakal.IngestSystem\obj\Debug\net8.0\Chakal.IngestSystem.sourcelink.json
+C:\Solutions\Chakal\Chakal.IngestSystem\bin\Debug\net8.0\protobuf-net.Core.dll

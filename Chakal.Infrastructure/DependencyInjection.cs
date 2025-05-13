@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Chakal.Core.Interfaces;
 using Chakal.Infrastructure.Persistence;
 using Chakal.Infrastructure.Sources;
+using Chakal.Application.Services;
 
 namespace Chakal.Infrastructure
 {
@@ -24,46 +25,27 @@ namespace Chakal.Infrastructure
             this IServiceCollection services,
             IConfiguration configuration)
         {
-            // Register ClickHouse services
-            services.AddSingleton<ClickHouseConnectionFactory>();
+            // Register ClickHouse persistence
             services.AddSingleton<IEventPersistence, ClickHouseEventPersistence>();
-            
+
             // Always use MockEventSource for simplicity and to avoid TikTokLiveSharp issues
-            services.AddSingleton<IEventSource, MockEventSource>();
-            
-            // Register BulkWriter
-            services.AddSingleton<BulkWriter>(provider =>
-            {
-                var logger = provider.GetRequiredService<ILogger<BulkWriter>>();
-                var persistence = provider.GetRequiredService<IEventPersistence>();
-                
-                // Find the event channel registered with the name "PersistChannel"
-                var eventChannel = provider.GetRequiredService<IEventChannel>();
-                
-                // We need to access the channel reader through reflection
-                // This is a workaround because we can't directly access the Reader property from IEventChannel
-                var channelReaderField = eventChannel.GetType().GetProperty("Reader");
-                if (channelReaderField == null)
-                {
-                    throw new InvalidOperationException("Unable to get Reader from EventChannel");
-                }
-                
-                var channelReader = channelReaderField.GetValue(eventChannel) as ChannelReader<object>;
-                if (channelReader == null)
-                {
-                    throw new InvalidOperationException("Invalid channel reader type");
-                }
-                
-                var options = new BulkWriterOptions
-                {
-                    MaxBatchSize = 5000,
-                    MaxWaitTimeMs = 500
-                };
-                
-                return new BulkWriter(logger, persistence, channelReader, options);
-            });
-            
+            //bool debugMode = false;
+            //if (bool.TryParse(configuration["DEBUG_MODE"], out bool parsed))
+            //{
+            //    debugMode = parsed;
+            //}
+
+            //if (debugMode)
+            //{
+            //    services.AddSingleton<IEventSource, MockEventSource>();
+            //}
+            //else
+            //{
+            // Use TikTokEventSource in production
+            services.AddSingleton<IEventSource, TikTokEventSource>();
+            //}
+
             return services;
         }
     }
-} 
+}
