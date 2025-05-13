@@ -11,6 +11,7 @@ using TikTokLiveSharp.Events;
 using Chakal.Infrastructure.Models.Facts;
 using TikTokLiveSharp.Events.Enums;
 using Newtonsoft.Json;
+using Chakal.Infrastructure.Services;
 
 namespace Chakal.Infrastructure.Sources;
 
@@ -23,6 +24,7 @@ public class TikTokEventSource : IEventSource, IDisposable, IAsyncDisposable
     private readonly string _host;
     private readonly TikTokLiveClient _client;
     private readonly IEventProcessor _eventProcessor;
+    private readonly RawEventArchiverService _archiverService;
 
     private EventProcessingDelegate? _callback;
     private CancellationTokenSource? _cts;
@@ -35,10 +37,12 @@ public class TikTokEventSource : IEventSource, IDisposable, IAsyncDisposable
     public TikTokEventSource(
         IConfiguration cfg,
         ILogger<TikTokEventSource> logger,
-        IEventProcessor eventProcessor)
+        IEventProcessor eventProcessor,
+        RawEventArchiverService archiverService)
     {
         _logger = logger;
         _eventProcessor = eventProcessor;
+        _archiverService = archiverService;
 
         _host = cfg["TIKTOK_HOST"]
             ?? throw new ArgumentException("TIKTOK_HOST environment variable is required");
@@ -111,8 +115,13 @@ public class TikTokEventSource : IEventSource, IDisposable, IAsyncDisposable
                 Username = e.User?.UniqueId ?? "unknown",
                 SocialType = SocialInteractionType.Join
             };
+            
+            // Archive raw event
+            ArchiveRawEvent(e, "join", socialEvt.EventTime);
+            
             await _callback!(socialEvt, _cts!.Token);
         };
+        
         _client.OnLike += async (_, e) =>
         {
             _logger.LogDebug(JsonConvert.SerializeObject(e));
@@ -125,6 +134,10 @@ public class TikTokEventSource : IEventSource, IDisposable, IAsyncDisposable
                 SocialType = SocialInteractionType.Like,
                 Count = (uint)e.Count
             };
+            
+            // Archive raw event
+            ArchiveRawEvent(e, "like", socialEvt.EventTime);
+            
             await _callback!(socialEvt, _cts!.Token);
         };
 
@@ -139,6 +152,10 @@ public class TikTokEventSource : IEventSource, IDisposable, IAsyncDisposable
                 Username = e.User?.UniqueId ?? "unknown",
                 SocialType = SocialInteractionType.Follow
             };
+            
+            // Archive raw event
+            ArchiveRawEvent(e, "follow", socialEvt.EventTime);
+            
             await _callback!(socialEvt, _cts!.Token);
         };
 
@@ -153,6 +170,10 @@ public class TikTokEventSource : IEventSource, IDisposable, IAsyncDisposable
                 Username = e.User?.UniqueId ?? "unknown",
                 SocialType = SocialInteractionType.Share
             };
+            
+            // Archive raw event
+            ArchiveRawEvent(e, "share", socialEvt.EventTime);
+            
             await _callback!(socialEvt, _cts!.Token);
         };
 
@@ -168,6 +189,10 @@ public class TikTokEventSource : IEventSource, IDisposable, IAsyncDisposable
                 Username = e.Sender?.UniqueId ?? "unknown",
                 Text = e.Message
             };
+            
+            // Archive raw event
+            ArchiveRawEvent(e, "chat", chat.EventTime);
+            
             await _callback!(chat, _cts!.Token);
         };
 
@@ -185,6 +210,10 @@ public class TikTokEventSource : IEventSource, IDisposable, IAsyncDisposable
                 StreakTotal = (uint)e.RepeatCount,
                 RepeatEnd = e.RepeatCount > 0
             };
+            
+            // Archive raw event
+            ArchiveRawEvent(e, "gift", gift.EventTime);
+            
             await _callback!(gift, _cts!.Token);
         };
 
@@ -199,6 +228,10 @@ public class TikTokEventSource : IEventSource, IDisposable, IAsyncDisposable
                 Username = e.Sender?.UniqueId ?? "unknown",
                 SocialType = (SocialInteractionType)MapSocialType(e.ShareType.ToString())
             };
+            
+            // Archive raw event
+            ArchiveRawEvent(e, "social", socialEvt.EventTime);
+            
             await _callback!(socialEvt, _cts!.Token);
         };
 
@@ -215,6 +248,10 @@ public class TikTokEventSource : IEventSource, IDisposable, IAsyncDisposable
                 SubTier = 1,     // Default value since SubTier is not available
                 IsRenew = false  // Default value since IsRenew is not available
             };
+            
+            // Archive raw event
+            ArchiveRawEvent(e, "subscription", subEvt.EventTime);
+            
             await _callback!(subEvt, _cts!.Token);
         };
 
@@ -236,6 +273,10 @@ public class TikTokEventSource : IEventSource, IDisposable, IAsyncDisposable
                 ControlType = type,
                 Value = e.BaseDescription
             };
+            
+            // Archive raw event
+            ArchiveRawEvent(e, "control", ctrl.EventTime);
+            
             await _callback!(ctrl, _cts!.Token);
         };
 
@@ -248,8 +289,121 @@ public class TikTokEventSource : IEventSource, IDisposable, IAsyncDisposable
                 RoomId = RoomId,
                 ViewerCount = (uint)e.NumberOfViewers
             };
+            
+            // Archive raw event
+            ArchiveRawEvent(e, "roomstats", stats.EventTime);
+            
             await _callback!(stats, _cts!.Token);
         };
+    }
+
+    private void ArchiveRawEvent(object rawEvent, string eventType, DateTime eventTime)
+    {
+        // Verificar si el almacenamiento MinIO está habilitado
+        var minioAvailable = Environment.GetEnvironmentVariable("MINIO_STORAGE_AVAILABLE");
+        if (string.IsNullOrEmpty(minioAvailable) || !bool.TryParse(minioAvailable, out var isAvailable) || !isAvailable)
+        {
+            // MinIO deshabilitado, no hacer nada
+            return;
+        }
+
+        try
+        {
+            var jsonString = JsonConvert.SerializeObject(rawEvent, new JsonSerializerSettings
+            {
+                NullValueHandling = NullValueHandling.Ignore
+            });
+            var jsonObj = JsonConvert.DeserializeObject<System.Collections.Generic.Dictionary<string, object>>(jsonString);
+            
+            if (jsonObj != null)
+            {
+                // Intentar obtener un ID único del evento
+                string eventId = ExtractEventId(rawEvent, jsonObj, eventType);
+                
+                var envelope = new WebcastEnvelope
+                {
+                    EventId = eventId,
+                    ReceivedAt = eventTime,
+                    RoomId = RoomId,
+                    EventType = eventType,
+                    RawData = jsonObj
+                };
+                
+                _archiverService.Enqueue(envelope);  // Fire and forget
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to archive raw event: {EventType}", eventType);
+            // Don't throw - archiving should never block the main flow
+        }
+    }
+
+    /// <summary>
+    /// Extrae o genera un ID único para el evento
+    /// </summary>
+    private string ExtractEventId(object rawEvent, System.Collections.Generic.Dictionary<string, object> jsonObj, string eventType)
+    {
+        // Intentar obtener el ID basado en el tipo de evento
+        try
+        {
+            // Comprobar si existe un ID específico en el evento
+            switch (eventType)
+            {
+                case "chat":
+                    // Para mensajes de chat, usar el MessageId si está disponible
+                    if (jsonObj.TryGetValue("messageId", out var msgId) && msgId != null)
+                    {
+                        return $"chat_{msgId}";
+                    }
+                    break;
+                    
+                case "gift":
+                    // Para regalos, combinar userId con timestamp para unicidad
+                    if (jsonObj.TryGetValue("user", out var user) && user is Newtonsoft.Json.Linq.JObject userObj)
+                    {
+                        var userId = userObj["id"];
+                        if (userId != null)
+                        {
+                            return $"gift_{userId}_{DateTime.UtcNow.Ticks}";
+                        }
+                    }
+                    break;
+                    
+                case "subscription":
+                    // Para suscripciones, combinar userId con timestamp
+                    if (jsonObj.TryGetValue("user", out var subUser) && subUser is Newtonsoft.Json.Linq.JObject subUserObj)
+                    {
+                        var subUserId = subUserObj["id"];
+                        if (subUserId != null)
+                        {
+                            return $"sub_{subUserId}_{DateTime.UtcNow.Ticks}";
+                        }
+                    }
+                    break;
+                    
+                // Otros tipos de eventos pueden tener sus propias reglas
+            }
+            
+            // Buscar campos comunes que podrían contener IDs
+            if (jsonObj.TryGetValue("id", out var id) && id != null && !string.IsNullOrEmpty(id.ToString()))
+            {
+                return $"{eventType}_{id}";
+            }
+            
+            if (jsonObj.TryGetValue("msgId", out var messageId) && messageId != null && !string.IsNullOrEmpty(messageId.ToString()))
+            {
+                return $"{eventType}_{messageId}";
+            }
+        }
+        catch (Exception ex)
+        {
+            // Ignorar errores al intentar extraer ID, simplemente generaremos uno
+            _logger.LogDebug(ex, "Error extracting event ID, will generate a random one");
+        }
+        
+        // Si no se puede obtener un ID específico, generar uno aleatorio
+        return $"{eventType}_{Guid.NewGuid()}";
     }
 
     /*──────────────────────────────────────────── UTIL */

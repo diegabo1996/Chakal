@@ -60,3 +60,7 @@ C:\Solutions\Chakal\Chakal.IngestSystem\bin\Debug\net8.0\Microsoft.Extensions.Di
 C:\Solutions\Chakal\Chakal.IngestSystem\bin\Debug\net8.0\Microsoft.Extensions.FileProviders.Abstractions.dll
 C:\Solutions\Chakal\Chakal.IngestSystem\obj\Debug\net8.0\Chakal.IngestSystem.sourcelink.json
 C:\Solutions\Chakal\Chakal.IngestSystem\bin\Debug\net8.0\protobuf-net.Core.dll
+C:\Solutions\Chakal\Chakal.IngestSystem\bin\Debug\net8.0\CommunityToolkit.HighPerformance.dll
+C:\Solutions\Chakal\Chakal.IngestSystem\bin\Debug\net8.0\Minio.dll
+C:\Solutions\Chakal\Chakal.IngestSystem\bin\Debug\net8.0\System.IO.Hashing.dll
+C:\Solutions\Chakal\Chakal.IngestSystem\bin\Debug\net8.0\System.Reactive.dll
