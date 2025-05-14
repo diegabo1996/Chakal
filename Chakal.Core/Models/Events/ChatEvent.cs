@@ -34,9 +34,14 @@ namespace Chakal.Core.Models.Events
         public Dictionary<string, uint> Emotes { get; set; } = new();
         
         /// <summary>
-        /// ID of the message being replied to (if any)
+        /// Lista de IDs mencionados con "@usuario"
         /// </summary>
-        public ulong ReplyToId { get; set; }
+        public IReadOnlyList<ulong> MentionedUserIds { get; set; } = Array.Empty<ulong>();
+        
+        /// <summary>
+        /// Código ISO-639 reportado por TikTok
+        /// </summary>
+        public string Language { get; set; } = string.Empty;
         
         /// <summary>
         /// Type of device used to send the message

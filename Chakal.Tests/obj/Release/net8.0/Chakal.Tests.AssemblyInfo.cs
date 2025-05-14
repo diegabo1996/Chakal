@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Chakal.Tests")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2ab58d39c4e90a03b9f9e4888a94c0c79e4ef3fa")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+02a0bcd15ffdfb8eed26511bd76fbb5c0e4c4cc7")]
 [assembly: System.Reflection.AssemblyProductAttribute("Chakal.Tests")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Chakal.Tests")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -239,7 +239,8 @@ namespace Chakal.Infrastructure.Sources
                 UserId = (ulong)_random.Next(10000, 99999),
                 Username = $"MockUser{_random.Next(1, 100)}",
                 Text = $"Mock chat message {_random.Next(1000, 9999)}",
-                DeviceType = _random.Next(0, 2) == 0 ? "Android" : "iOS"
+                DeviceType = _random.Next(0, 2) == 0 ? "Android" : "iOS",
+                Language = "es"  // Default language for mock events
             };
             
             if (_random.Next(0, 10) < 3) // 30% chance to have emotes
@@ -251,9 +252,13 @@ namespace Chakal.Infrastructure.Sources
                 };
             }
             
-            if (_random.Next(0, 10) < 2) // 20% chance to be a reply
+            if (_random.Next(0, 10) < 2) // 20% chance to have mentions
             {
-                chatEvent.ReplyToId = (ulong)_random.Next(100000, 999999);
+                chatEvent.MentionedUserIds = new[]
+                {
+                    (ulong)_random.Next(10000, 99999),
+                    (ulong)_random.Next(10000, 99999)
+                };
             }
             
             _logger.LogDebug("Generated chat event: {Username}: {Message}", chatEvent.Username, chatEvent.Text);

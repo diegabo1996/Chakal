@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
@@ -187,7 +188,14 @@ public class TikTokEventSource : IEventSource, IDisposable, IAsyncDisposable
                 MessageId = (ulong)e.MessageId,
                 UserId = e.Sender?.Id is long id ? (ulong)id : 0,
                 Username = e.Sender?.UniqueId ?? "unknown",
-                Text = e.Message
+                Text = e.Message ?? string.Empty,
+                
+                MentionedUserIds = e.MentionedUsers?
+                                   .Select(u => (ulong)u.Id)
+                                   .ToArray()
+                                   ?? Array.Empty<ulong>(),
+                
+                Language = e.ContentLanguage ?? string.Empty
             };
             
             // Archive raw event

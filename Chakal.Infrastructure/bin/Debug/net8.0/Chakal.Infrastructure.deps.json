@@ -18,6 +18,7 @@
           "Microsoft.Extensions.Options": "9.0.4",
           "Minio": "6.0.4",
           "Octonica.ClickHouseClient": "3.1.3",
+          "TikTokLiveSharp": "0.1.4",
           "TikTokLive_Sharp": "1.2.2"
         },
         "runtime": {
@@ -235,6 +236,12 @@
           }
         }
       },
+      "TikTokLiveSharp/0.1.4": {
+        "dependencies": {
+          "Newtonsoft.Json": "13.0.3",
+          "protobuf-net": "3.2.26"
+        }
+      },
       "TikTokLive_Sharp/1.2.2": {
         "dependencies": {
           "Newtonsoft.Json": "13.0.3",
@@ -433,6 +440,13 @@
       "sha512": "sha512-rHaWtKDwCi9qJ3ObKo8LHPMuuwv33YbmQi7TcUK1C264V3MFnOr5Im7QgCTdLniztP3GJyeiSg5x8NqYJFqRmg==",
       "path": "system.reactive/6.0.1",
       "hashPath": "system.reactive.6.0.1.nupkg.sha512"
+    },
+    "TikTokLiveSharp/0.1.4": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-CQskShHPE8XU50DMJpXI0/kxSMYEVlLQDXkHI5jkrPACZReNQrv8gwMcPaTajTv+dLaSHrHJjAUht26PNxUTcQ==",
+      "path": "tiktoklivesharp/0.1.4",
+      "hashPath": "tiktoklivesharp.0.1.4.nupkg.sha512"
     },
     "TikTokLive_Sharp/1.2.2": {
       "type": "package",

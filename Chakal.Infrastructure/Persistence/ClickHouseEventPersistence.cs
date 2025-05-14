@@ -55,9 +55,9 @@ namespace Chakal.Infrastructure.Persistence
                 using var command = connection.CreateCommand();
                 command.CommandText = @"
                     INSERT INTO fact_chat
-                    (event_time, room_id, user_id, message_id, text, device_type)
+                    (event_time, room_id, user_id, message_id, text, mentioned_user_ids, language)
                     VALUES
-                    (@eventTime, @roomId, @userId, @messageId, @message, @deviceType)
+                    (@eventTime, @roomId, @userId, @messageId, @message, @mentionedUserIds, @language)
                 ";
                 
                 // Insert events one by one instead of as an array to avoid type conversion issues
@@ -100,11 +100,19 @@ namespace Chakal.Infrastructure.Persistence
                         Value = evt.Text ?? string.Empty
                     });
                     
+                    
                     command.Parameters.Add(new ClickHouseParameter
                     {
-                        ParameterName = "deviceType",
-                        Value = evt.DeviceType ?? string.Empty
+                        ParameterName = "mentionedUserIds",
+                        Value = evt.MentionedUserIds ?? Array.Empty<ulong>()
                     });
+                    
+                    command.Parameters.Add(new ClickHouseParameter
+                    {
+                        ParameterName = "language",
+                        Value = evt.Language ?? string.Empty
+                    });
+                    
                     
                     await command.ExecuteNonQueryAsync(cancellationToken);
                 }

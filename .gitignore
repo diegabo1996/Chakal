@@ -1,4 +1,4 @@
 .vs/
 .vscode/
-.dll
-.pbd
+*.dll
+*.pbd
