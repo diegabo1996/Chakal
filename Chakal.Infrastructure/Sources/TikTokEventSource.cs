@@ -71,6 +71,12 @@ public class TikTokEventSource : IEventSource, IDisposable, IAsyncDisposable
             null, // Pass null for optional string parameters
             null  // Pass null for optional string parameters
         );
+
+        var cookies = cfg["TIKTOK_COOKIES"];
+        if (!string.IsNullOrEmpty(cookies))
+        {
+            TryApplyCookies(cookies);
+        }
         RegisterCallbacks();
     }
 
@@ -412,6 +418,40 @@ public class TikTokEventSource : IEventSource, IDisposable, IAsyncDisposable
         
         // Si no se puede obtener un ID específico, generar uno aleatorio
         return $"{eventType}_{Guid.NewGuid()}";
+    }
+
+    private void TryApplyCookies(string cookieString)
+    {
+        try
+        {
+            var httpClientField = typeof(TikTokLiveClient).BaseType?
+                .GetField("httpClient", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+            var httpClient = httpClientField?.GetValue(_client);
+            if (httpClient == null) return;
+
+            var cookieProp = httpClient.GetType().GetProperty(
+                "CookieJar",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic);
+            var jar = cookieProp?.GetValue(httpClient);
+            if (jar == null) return;
+
+            var indexer = jar.GetType().GetProperty("Item");
+            foreach (var pair in cookieString.Split(';'))
+            {
+                var parts = pair.Split('=', 2);
+                if (parts.Length == 2)
+                {
+                    indexer?.SetValue(jar, parts[1], new object[] { parts[0].Trim() });
+                }
+            }
+
+            cookieProp?.SetValue(httpClient, jar);
+            _logger.LogInformation("Applied {Count} cookies to TikTok client", jar.GetType().GetProperty("Count")?.GetValue(jar));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to apply cookies from TIKTOK_COOKIES");
+        }
     }
 
     /*──────────────────────────────────────────── UTIL */
