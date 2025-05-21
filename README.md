@@ -40,6 +40,7 @@ The system is configured via environment variables:
 | `CLICKHOUSE_CONN` | ClickHouse connection string | - |
 | `LOG_LEVEL` | Logging verbosity (Trace, Debug, Information, Warning, Error, Critical) | `Debug` |
 | `DEBUG_MODE` | Enable mock event generation | `true` |
+| `TIKTOK_COOKIES` | Optional cookies to send with TikTok requests (format `key=value;`) | - |
 
 Example .env file:
 
@@ -48,6 +49,7 @@ TIKTOK_HOST=username
 CLICKHOUSE_CONN=Host=clickhouse;Port=8123;Database=chakal;User=default;Password=Chakal123!
 LOG_LEVEL=Information
 DEBUG_MODE=false
+TIKTOK_COOKIES=sessionid=abc123; other=val
 ```
 
 ## Running Locally
