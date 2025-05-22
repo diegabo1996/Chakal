@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -49,34 +50,39 @@ public class TikTokEventSource : IEventSource, IDisposable, IAsyncDisposable
             ?? throw new ArgumentException("TIKTOK_HOST environment variable is required");
         // Create TikTokLiveSharp client; host without @ and without spaces
 
-        // Specify the constructor explicitly to resolve ambiguity
-        _client = new TikTokLiveClient(
-            _host,
-            null, // Pass null for optional float? parameters
-            null,
-            null,
-            null, // Pass null for optional string parameters
-            false, // Default values for optional bool parameters
-            false,
-            null, // Pass null for optional Dictionary<string, object>
-            false,
-            false,
-            null, // Pass null for optional IWebProxy
-            null, // Pass null for optional string parameters
-            0,    // Default value for uint
-            false,
-            TikTokLiveSharp.Client.Config.LogLevel.Error, // Example LogLevel
-            false,
-            false,
-            null, // Pass null for optional string parameters
-            null  // Pass null for optional string parameters
-        );
-
+        // Build optional client parameters
+        Dictionary<string, object>? clientParams = null;
         var cookies = cfg["TIKTOK_COOKIES"];
         if (!string.IsNullOrEmpty(cookies))
         {
-            TryApplyCookies(cookies);
+            clientParams = new Dictionary<string, object>
+            {
+                ["Cookie"] = cookies
+            };
         }
+
+        // Specify the constructor explicitly to resolve ambiguity
+        _client = new TikTokLiveClient(
+            _host,
+            null,
+            null,
+            null,
+            null,
+            false,
+            false,
+            clientParams,
+            false,
+            false,
+            null,
+            null,
+            0,
+            false,
+            TikTokLiveSharp.Client.Config.LogLevel.Error,
+            false,
+            false,
+            null,
+            null
+        );
         RegisterCallbacks();
     }
 
@@ -418,40 +424,6 @@ public class TikTokEventSource : IEventSource, IDisposable, IAsyncDisposable
         
         // Si no se puede obtener un ID específico, generar uno aleatorio
         return $"{eventType}_{Guid.NewGuid()}";
-    }
-
-    private void TryApplyCookies(string cookieString)
-    {
-        try
-        {
-            var httpClientField = typeof(TikTokLiveClient).BaseType?
-                .GetField("httpClient", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-            var httpClient = httpClientField?.GetValue(_client);
-            if (httpClient == null) return;
-
-            var cookieProp = httpClient.GetType().GetProperty(
-                "CookieJar",
-                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic);
-            var jar = cookieProp?.GetValue(httpClient);
-            if (jar == null) return;
-
-            var indexer = jar.GetType().GetProperty("Item");
-            foreach (var pair in cookieString.Split(';'))
-            {
-                var parts = pair.Split('=', 2);
-                if (parts.Length == 2)
-                {
-                    indexer?.SetValue(jar, parts[1], new object[] { parts[0].Trim() });
-                }
-            }
-
-            cookieProp?.SetValue(httpClient, jar);
-            _logger.LogInformation("Applied {Count} cookies to TikTok client", jar.GetType().GetProperty("Count")?.GetValue(jar));
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Failed to apply cookies from TIKTOK_COOKIES");
-        }
     }
 
     /*──────────────────────────────────────────── UTIL */
