@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Chakal.IngestSystem")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2ab58d39c4e90a03b9f9e4888a94c0c79e4ef3fa")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+92c44974b7f9ae249e22f2ab127ecee0357f5a43")]
 [assembly: System.Reflection.AssemblyProductAttribute("Chakal.IngestSystem")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Chakal.IngestSystem")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

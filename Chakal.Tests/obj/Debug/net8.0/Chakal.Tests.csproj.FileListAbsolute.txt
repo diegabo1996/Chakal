@@ -121,3 +121,14 @@ C:\Solutions\Chakal\Chakal.Tests\obj\Debug\net8.0\refint\Chakal.Tests.dll
 C:\Solutions\Chakal\Chakal.Tests\obj\Debug\net8.0\Chakal.Tests.pdb
 C:\Solutions\Chakal\Chakal.Tests\obj\Debug\net8.0\Chakal.Tests.genruntimeconfig.cache
 C:\Solutions\Chakal\Chakal.Tests\obj\Debug\net8.0\ref\Chakal.Tests.dll
+C:\Solutions\Chakal\Chakal.Tests\bin\Debug\net8.0\CommunityToolkit.HighPerformance.dll
+C:\Solutions\Chakal\Chakal.Tests\bin\Debug\net8.0\Microsoft.Extensions.DependencyInjection.dll
+C:\Solutions\Chakal\Chakal.Tests\bin\Debug\net8.0\Microsoft.Extensions.Diagnostics.Abstractions.dll
+C:\Solutions\Chakal\Chakal.Tests\bin\Debug\net8.0\Microsoft.Extensions.FileProviders.Abstractions.dll
+C:\Solutions\Chakal\Chakal.Tests\bin\Debug\net8.0\Microsoft.Extensions.Hosting.Abstractions.dll
+C:\Solutions\Chakal\Chakal.Tests\bin\Debug\net8.0\Microsoft.Extensions.Logging.dll
+C:\Solutions\Chakal\Chakal.Tests\bin\Debug\net8.0\Microsoft.Extensions.Options.dll
+C:\Solutions\Chakal\Chakal.Tests\bin\Debug\net8.0\Minio.dll
+C:\Solutions\Chakal\Chakal.Tests\bin\Debug\net8.0\protobuf-net.Core.dll
+C:\Solutions\Chakal\Chakal.Tests\bin\Debug\net8.0\System.IO.Hashing.dll
+C:\Solutions\Chakal\Chakal.Tests\bin\Debug\net8.0\System.Reactive.dll
