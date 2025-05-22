@@ -82,16 +82,28 @@ namespace Chakal.IngestSystem
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             _logger.LogInformation("IngestWorker starting");
-            
-            try
+
+            while (!stoppingToken.IsCancellationRequested)
             {
-                await _eventSource.StartAsync(ProcessEventAsync, stoppingToken);
-                _logger.LogInformation("Event source started successfully");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error starting event source");
-                throw;
+                try
+                {
+                    _logger.LogInformation("Attempting to start event source…");
+                    await _eventSource.StartAsync(ProcessEventAsync, stoppingToken);
+                    _logger.LogWarning("Event source stopped. Waiting for stream to resume…");
+                }
+                catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+                {
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error running event source");
+                }
+
+                if (!stoppingToken.IsCancellationRequested)
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
+                }
             }
         }
         

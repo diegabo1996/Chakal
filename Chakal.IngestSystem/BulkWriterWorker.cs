@@ -342,7 +342,7 @@ namespace Chakal.IngestSystem
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error flushing events");
-                throw;
+                // Don't rethrow - keep worker running even if persistence fails
             }
         }
 
